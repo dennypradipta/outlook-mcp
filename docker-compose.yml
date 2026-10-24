@@ -1,0 +1,61 @@
+# M365 Assistant MCP Server — runs the prebuilt image from Azure Container Registry
+#
+#   image: hyperjump.azurecr.io/startgpt/mcp-outlook
+#
+# Two services share one image and one token volume:
+#   - mcp  : the MCP server over Streamable HTTP (port 3000)
+#   - auth : the OAuth callback server (port 3333)
+#
+# Credentials are read from .env (see .env.example).
+#
+# Before running, log in to the registry:
+#   az acr login --name hyperjump
+#   # or: docker login hyperjump.azurecr.io
+#
+# Usage:
+#   docker compose up -d          # start both services
+#   docker compose logs -f mcp
+#   docker compose down           # stop (keeps the token volume)
+#   docker compose down -v        # stop AND delete stored tokens
+
+services:
+  mcp:
+    image: hyperjump.azurecr.io/startgpt/mcp-outlook:latest
+    container_name: outlook-mcp
+    command: ["node", "index.js"]
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MCP_TRANSPORT: http
+      HOST: 0.0.0.0
+      PORT: "3000"
+      MCP_PATH: /mcp
+      HOME: /data
+      OUTLOOK_TOKEN_STORE_DIR: /data
+    ports:
+      - "3000:3000"
+    volumes:
+      - mcp-tokens:/data
+    restart: unless-stopped
+
+  auth:
+    image: hyperjump.azurecr.io/startgpt/mcp-outlook:latest
+    container_name: outlook-mcp-auth
+    command: ["node", "outlook-auth-server.js"]
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      AUTH_PORT: "3333"
+      MS_REDIRECT_URI: http://localhost:3333/auth/callback
+      HOME: /data
+      OUTLOOK_TOKEN_STORE_DIR: /data
+    ports:
+      - "3333:3333"
+    volumes:
+      - mcp-tokens:/data
+    restart: unless-stopped
+
+volumes:
+  mcp-tokens:

@@ -1,0 +1,44 @@
+# Version control
+.git
+.gitignore
+.github
+
+# Dependencies (installed inside the image)
+node_modules
+
+# Local env / secrets
+.env
+.env.*
+!.env.example
+
+# Tokens and credentials
+*.pem
+*.key
+*.cert
+*.token.json
+.outlook-mcp-tokens.json
+
+# Tests and tooling not needed at runtime
+test
+coverage
+jest.config.*
+*.test.js
+*.spec.js
+
+# Scripts / logs / editor / OS
+*.log
+logs
+backup-logs.sh
+.DS_Store
+Thumbs.db
+.idea
+.vscode
+
+# Docker files themselves
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Docs
+README.md
+CLAUDE.md
